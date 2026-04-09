@@ -1,5 +1,6 @@
 # Dependency directories
 node_modules/
+**/node_modules/
 
 # Environment files
 .env
@@ -11,9 +12,6 @@ node_modules/
 # Build outputs
 /client/dist/
 /server/dist/
-
-# Prisma
-/server/generated/prisma/
 
 # Debug logs
 npm-debug.log*

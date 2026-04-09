@@ -2,8 +2,46 @@ const db = require('../config/db');
 
 const getAllTasks = async (req, res) => {
   try {
-    const { rows } = await db.query('SELECT * FROM tasks');
-    res.status(200).json(rows);
+    const { status, page, limit } = req.query;
+
+    let queryParams = [];
+    let queryIndex = 1;
+    let whereClause = '';
+
+    if (status) {
+      whereClause = `WHERE status = $${queryIndex}`;
+      queryParams.push(status);
+      queryIndex++;
+    }
+
+    const countQuery = `SELECT COUNT(*) FROM tasks ${whereClause}`;
+    const countResult = await db.query(countQuery, queryParams);
+    const totalCount = parseInt(countResult.rows[0].count, 10);
+
+    const currentPage = parseInt(page, 10) || 1;
+    const itemsPerPage = parseInt(limit, 10) || 10;
+    const offset = (currentPage - 1) * itemsPerPage;
+    const totalPages = Math.ceil(totalCount / itemsPerPage);
+
+    const dataQuery = `
+      SELECT * FROM tasks 
+      ${whereClause} 
+      ORDER BY id ASC 
+      LIMIT $${queryIndex} OFFSET $${queryIndex + 1}
+    `;
+    
+    queryParams.push(itemsPerPage, offset);
+
+    const { rows } = await db.query(dataQuery, queryParams);
+
+    res.status(200).json({
+      data: rows,
+      metadata: {
+        totalCount,
+        currentPage,
+        totalPages
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: 'Internal server error' });
   }

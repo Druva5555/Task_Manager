@@ -24,8 +24,25 @@ const getTaskById = async (req, res) => {
   }
 };
 
-const createTask = (req, res) => {
-  res.status(201).json({ message: 'Create new task', data: req.body });
+const createTask = async (req, res) => {
+  try {
+    const { title, description, status, dueDate } = req.body;
+    
+    const taskStatus = status || 'todo';
+    
+    const query = `
+      INSERT INTO tasks (title, description, status, "dueDate")
+      VALUES ($1, $2, $3, $4)
+      RETURNING *;
+    `;
+    const values = [title, description, taskStatus, dueDate || null];
+    
+    const { rows } = await db.query(query, values);
+    
+    res.status(201).json(rows[0]);
+  } catch (error) {
+    res.status(500).json({ message: 'Internal server error' });
+  }
 };
 
 const updateTask = (req, res) => {

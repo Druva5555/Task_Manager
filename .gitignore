@@ -12,6 +12,9 @@ node_modules/
 /client/dist/
 /server/dist/
 
+# Prisma
+/server/generated/prisma/
+
 # Debug logs
 npm-debug.log*
 yarn-debug.log*

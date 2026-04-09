@@ -5,7 +5,7 @@ const validateTask = (req, res, next) => {
     return res.status(400).json({ message: 'Title is required and must be a valid, non-empty string.' });
   }
 
-  const validStatuses = ['todo', 'in-progress', 'done'];
+  const validStatuses = ['todo', 'in_progress', 'done'];
   
   if (status && !validStatuses.includes(status)) {
     return res.status(400).json({ 

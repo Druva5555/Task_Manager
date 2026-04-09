@@ -1,0 +1,42 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: task_manager_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: task_manager
+    ports:
+      - "5432:5432"
+    volumes:
+      - task_data:/var/lib/postgresql/data
+
+  server:
+    build: ./server
+    container_name: task_manager_server
+    restart: always
+    environment:
+      PORT: 5000
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_HOST: db
+      DB_NAME: task_manager
+      DB_PORT: 5432
+      DATABASE_URL: postgresql://postgres:password@db:5432/task_manager?schema=public
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+
+  client:
+    build: ./client
+    container_name: task_manager_client
+    restart: always
+    ports:
+      - "5173:5173"
+    depends_on:
+      - server
+
+volumes:
+  task_data:

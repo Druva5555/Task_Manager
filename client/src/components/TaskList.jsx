@@ -11,7 +11,7 @@ const TaskList = ({ tasks, loading, error, onStatusChange, onDelete }) => {
       {tasks.length === 0 ? (
         <p style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No tasks found. Create one above!</p>
       ) : (
-        tasks.map((task) => (
+        tasks.map((task) => (    
           <TaskItem 
             key={task.id} 
             task={task} 

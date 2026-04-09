@@ -1,123 +1,42 @@
-# Task Manager Application
+# My Task Manager Project
 
-A minimal full-stack task management application built with Node.js (Express), React (Vite), and PostgreSQL (Prisma).
+I put this project together to create a simple, no-fuss way to track tasks. It’s got a clean React frontend and a Node.js API that talks to a Postgres database. I used Prisma to keep the database stuff easy to manage and type-safe.
 
-## Setup Instructions
+The whole thing is containerized with Docker, so you don't have to worry about installing a bunch of dependencies manually just to see it work.
 
-### Prerequisites
-- Docker and Docker Compose installed.
-- Node.js (v18+) if running locally.
+### Getting it up and running
 
-### Running with Docker (Recommended)
-1. Clone the repository.
-2. In the root directory, run:
-   ```bash
-   docker-compose up --build
-   ```
-3. Access the services:
-   - Frontend: http://localhost:5173
-   - Backend API: http://localhost:5000
+The easiest way to see everything in action is using Docker. If you have Docker and Docker Compose ready, just do this:
 
-### Running Locally
-1. **Database**: Ensure a PostgreSQL instance is running.
-2. **Backend**:
-   - `cd server`
-   - `npm install`
-   - Update `.env` with your `DATABASE_URL`.
-   - `npx prisma migrate dev`
-   - `npm run dev`
-3. **Frontend**:
-   - `cd client`
-   - `npm install`
-   - `npm run dev`
+1. Open your terminal in this folder.
+2. Run `docker-compose up --build`.
 
-## Folder Structure
-- `/server`: Express backend, Prisma schema, and controllers.
-- `/client`: React frontend with Vite, components, and services.
-- `/docker-compose.yml`: Container orchestration for DB, Back, and Front.
+That’s basically it. The database spins up, the API starts talking to it, and the frontend connects to the API.
+*   **The App:** [http://localhost:5173](http://localhost:5173)
+*   **The API:** [http://localhost:5000](http://localhost:5000)
 
-## Technical Choices & Assumptions
-- **Prisma 7**: Used for modern type-safe database access and streamlined migrations.
-- **MVC Architecture**: Separated routes and controllers for better maintainability.
-- **Optimistic Updates**: Implemented on the frontend for immediate feedback during status changes.
-- **Design System**: A custom modern CSS system using CSS variables for high-quality visuals without heavy libraries.
-- **Default User**: The system auto-seeds a default user to fulfill the task-to-user relation requirement without a full auth flow.
+### If you want to run it manually
 
-## Future Improvements
-- **Authentication**: JWT-based login and registration.
-- **Real-time Updates**: Socket.io for collaborative task management.
-- **Performance**: Redis caching for frequently accessed task lists.
-- **Testing**: Comprehensive unit and integration tests with Jest and Playwright.
+You can also run the pieces yourself if you prefer. You'll just need a Postgres instance running somewhere.
 
-## Environment Variables
-Copy `.env.example` in the `server` folder to `.env` and fill the database URL if you are running your own Postgres:
-```bash
-# In the /server directory
-cp .env.example .env
+**For the Backend:**
+Go into the `server` folder and run `npm install`. You'll need an `.env` file (I left an example in there) with your database connection string. Then run `npx prisma db push` to set up the tables and `npm run dev` to start the server.
 
-### 2. Install Dependencies
-```bash
-# In the server directory
-cd server
-npm install
+**For the Frontend:**
+Go into the `client` folder, run `npm install`, and then `npm run dev`. It'll give you a local URL to open in your browser.
 
-# In the client directory
-cd ../client
-npm install
-```
+### A quick look at how it works
 
-### 3. Setup Database (Prisma)
-Ensure your postgres database is running. Then, let Prisma setup the tables:
-```bash
-cd server
-npx prisma db push
-npx prisma generate
-```
+- **The UI:** I built the frontend with React and Vite. I decided to stick with plain CSS for the styling because I wanted total control over the look without dragging in a heavy framework. It’s responsive and has a "premium" feel thanks to some custom CSS variables.
+- **The API:** It’s a standard Express server. I laid it out using a simple routes-and-controllers structure to keep the code clean. 
+- **The Database:** Prisma handles the heavy lifting here. I set up a relationship where tasks are linked to users. To keep things simple for now, the server creates a "Default User" automatically if it doesn't see one, so you can start adding tasks immediately without needing to build a whole login system first.
+- **Snappy Updates:** I added "optimistic updates" to the status toggles. This means the UI responds the second you click a button, and if the network fails, it just rolls back the change. It feels much faster that way.
 
-### 4. Run the Application
-#### Start Backend
-```bash
-cd server
-npm run dev
-```
+### What's in the folders?
 
-#### Start Frontend
-```bash
-cd client
-npm run dev
-```
+- `client/`: All the React components like the task form and list.
+- `server/`: The Express logic, including the controllers and the Prisma schema.
+- `docker-compose.yml`: The blueprint for the containers.
 
----
+I'm pretty happy with how it turned out. If I had more time, I'd probably add real user accounts with passwords and maybe some better search/filter options for the task list.
 
-## Folder Structure
-
-```
-Task_Manager/
-├── client/                 # React Frontend
-│   ├── src/
-│   │   ├── components/     # UI Components (TaskForm, TaskList, TaskItem)
-│   │   ├── services/       # API clients (axios config)
-│   │   ├── App.jsx         # Main layout and centralized state
-│   │   └── App.css         # Premium Vanilla CSS styling
-│   └── package.json        
-├── server/                 # Node.js/Express Backend
-│   ├── controllers/        # Request handlers (Task CRUD)
-│   ├── middlewares/        # Express middlewares (Validation)
-│   ├── prisma/             # Prisma ORM Schema & Migrations
-│   ├── routes/             # Express API routers
-│   ├── index.js            # Server entrypoint and User Seeding
-│   └── package.json
-└── docker-compose.yml      # Orchestrates Postgres, Server, and Client
-```
-
----
-
-## Assumptions & Trade-offs
-1. **User Auth Simplification (Bonus)**: To fulfill the Foreign Key / User Reference bonus without forcing the user to build out an entire registration/login UI, the backend will automatically seed a "Default User" into the database on startup. All tasks created are linked to this user's `id`. This correctly implements the relational schema requirements.
-2. **Optimistic UI vs Backend Truth**: The client aggressively updates the state for status changes for a snappier feel. To prevent data corruption, if the backend rejects the change, the state locally reverts to the previous snapshot without requiring another fetch.
-3. **Database Setup**: We opted for Prisma ORM rather than raw SQL `pg` queries. This inherently handles SQL Injection protection and type safety, but trade-offs include slightly heavier node dependencies compared to raw drivers.
-
-## Future Improvements
-- **Authentication**: Implementing JWT-based auth and assigning users real tokens, removing the "Default User" seed.
-- **Form Validation (Frontend)**: Implementing react-hook-form or Yup to validate the Task shape before calling the backend.
-- **Global State**: Transitioning the `tasks` state out of `App.jsx` and into a global store like Redux or React Query (TanStack Query) to manage the caching layer better and improve pagination UX.

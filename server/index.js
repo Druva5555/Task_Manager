@@ -16,7 +16,7 @@ app.get('/', (req, res) => {
   res.send('Task Manager API Server Running');
 });
 
-const initDefaultUser = async () => {
+const initDefaultUser = async () => {    
   try {
     let defaultUser = await prisma.user.findFirst();
     if (!defaultUser) {
